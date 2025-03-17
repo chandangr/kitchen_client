@@ -4,7 +4,7 @@ export function authorizeUser() {
   const userDetails = getAuthUserData();
 
   if (!userDetails) {
-    window.location.href = "/login"; // Navigate to login page
+    window.location.href = "/kitchen_client/login"; // Navigate to login page
     return false;
   }
   return userDetails;
