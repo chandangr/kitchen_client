@@ -1,6 +1,6 @@
 {
-  "homepage": "https://chandangr.github.io/cloud_kitchen",
-  "name": "cloud_kitchen_client",
+  "homepage": "https://chandangr.github.io/kitchen_client",
+  "name": "kitchen_client",
   "private": true,
   "version": "0.0.0",
   "type": "module",

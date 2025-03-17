@@ -13,5 +13,5 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  base: "/cloud_kitchen_client/", // Add base path for GitHub Pages
+  base: "/kitchen_client/", // Add base path for GitHub Pages
 });
