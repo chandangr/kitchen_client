@@ -122,7 +122,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     supabase.auth?.storage?.removeItem("user");
     setIsAuthenticated(false);
     setSession(undefined);
-    window.location.href = "/kitchen_client/login"; // Navigate to login page after signup
+    window.location.href = "/kitchen_client"; // Navigate to login page after signup
   };
 
   return (
