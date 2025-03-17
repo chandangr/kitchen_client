@@ -71,7 +71,7 @@ function App() {
 
   return (
     <React.StrictMode>
-      <Router>
+      <Router basename="/kitchen_client">
         <Routes>
           {/* Public route */}
           <Route path="/login" element={<LoginPage />} />
