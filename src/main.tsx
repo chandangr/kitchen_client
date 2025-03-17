@@ -1,5 +1,5 @@
 import ReactDOM from "react-dom/client";
-import { default as App } from "./App";
+import App from "./App";
 import { Toaster } from "./components/ui/sonner";
 import { AuthProvider } from "./contexts/AuthContext";
 import "./index.css";
