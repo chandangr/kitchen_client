@@ -1,3 +1,4 @@
+import { uploadFileToSupabase } from "@/services/fileUploadService";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CloudUpload } from "lucide-react";
 import { useState } from "react";
@@ -491,13 +492,15 @@ const cuisineTypes = {
   ],
 };
 
+type CuisineType = keyof typeof cuisineTypes;
+
 const formSchema = z.object({
   dish_name: z.string().nonempty("Dish name is required."),
   dish_image: z.string().optional(),
   dish_recipe: z.string().nonempty("Dish recipe is required."),
   dish_calorie_count: z.string().nonempty("Calories is required."),
   dish_price: z.string().nonempty("Price is required."),
-  dish_tags: z.array(z.string()).nonempty("Tags is required."),
+  dish_tags: z.array(z.string()).min(1, "At least one tag is required."),
   dish_category: z.string().nonempty("Dish category is required."),
   dish_type: z.string().nonempty("Dish type is required."),
   dish_occasion: z.string().nonempty("Dish occasion is required."),
@@ -511,7 +514,7 @@ const formSchema = z.object({
 
 const cuisineList = Object.keys(cuisineTypes).map((cuisine) => cuisine);
 
-export type DishItem = { id: string } & z.infer<typeof formSchema>;
+export type DishItem = z.infer<typeof formSchema> & { id?: string };
 
 export type DishItemDrawerProps = {
   isOpen: boolean;
@@ -529,12 +532,15 @@ const DishItemDrawer = ({
   initialValues,
 }: DishItemDrawerProps) => {
   const [files, setFiles] = useState<File[] | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   const dropZoneConfig = {
-    maxFiles: 5,
-    maxSize: 1024 * 1024 * 4,
-    multiple: true,
+    maxFiles: 1,
+    maxSize: 1024 * 1024 * 4, // 4MB
+    multiple: false,
+    accept: {
+      "image/*": [".png", ".jpg", ".pdf", ".jpeg", ".gif"],
+    },
   };
-  console.log("initialValues", initialValues);
 
   const form = useForm<DishItem>({
     resolver: zodResolver(formSchema),
@@ -542,25 +548,50 @@ const DishItemDrawer = ({
       ...initialValues,
       dish_calorie_count: initialValues?.dish_calorie_count?.toString(),
       dish_price: initialValues?.dish_price?.toString(),
+      dish_tags: initialValues?.dish_tags || [],
+      dish_image: initialValues?.dish_image || "",
     },
   });
 
   const onSubmit = async (values: DishItem) => {
     try {
-      if (initialValues) {
-        onEdit(values);
+      setIsUploading(true);
+
+      // Upload images if files are selected
+      if (files && files.length > 0) {
+        const uploadPromises = files.map((file) => uploadFileToSupabase(file));
+        const uploadResults = await Promise.all(uploadPromises);
+
+        // Filter out failed uploads and get successful URLs
+        const successfulUploads = uploadResults.filter(
+          (result): result is NonNullable<typeof result> => result !== null
+        );
+
+        if (successfulUploads.length > 0) {
+          // Use the first image URL as the dish image
+          values.dish_image = successfulUploads[0].url;
+        }
+      }
+
+      if (initialValues?.id) {
+        onEdit({ ...values, id: initialValues.id });
       } else {
         onAdd(values);
       }
+
       form.reset();
+      setFiles(null);
       onClose();
     } catch (error) {
       console.error("Form submission error", error);
       toast.error("Failed to submit the form. Please try again.");
+    } finally {
+      setIsUploading(false);
     }
   };
 
-  const isCuisinePresent = !!cuisineTypes?.[form.getValues("cuisine")];
+  const selectedCuisine = form.watch("cuisine") as CuisineType;
+  const isCuisinePresent = selectedCuisine in cuisineTypes;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -675,7 +706,7 @@ const DishItemDrawer = ({
                           <SelectValue placeholder="Select cuisine types" />
                         </SelectTrigger>
                         <SelectContent>
-                          {cuisineTypes?.[form.getValues("cuisine")]?.map(
+                          {cuisineTypes?.[selectedCuisine]?.map(
                             (cuisine, index) => (
                               <SelectItem key={index} value={cuisine}>
                                 {cuisine}
@@ -868,15 +899,18 @@ const DishItemDrawer = ({
                         value={files}
                         onValueChange={setFiles}
                         dropzoneOptions={dropZoneConfig}
-                        className="relative bg-background rounded-lg p-2"
+                        className="outline-dashed outline-1 outline-slate-500 rounded-md"
+                        size="sm"
+                        showPreview={true}
                       >
                         <FileInput
                           id="fileInput"
-                          className="outline-dashed outline-1 outline-slate-500"
+                          className="h-9 px-3 py-1"
                           {...field}
                         >
-                          <div className="flex items-center justify-center flex-col p-8 w-full ">
-                            <CloudUpload className="text-gray-500 w-10 h-10" />
+                          <div className="flex items-center gap-2 text-sm text-gray-500">
+                            <CloudUpload className="w-4 h-4" />
+                            <span>Choose file</span>
                           </div>
                         </FileInput>
                       </FileUploader>
@@ -889,9 +923,11 @@ const DishItemDrawer = ({
 
             <Button
               type="submit"
-              disabled={!form.formState.isDirty && !!initialValues}
+              disabled={
+                (!form.formState.isDirty && !!initialValues) || isUploading
+              }
             >
-              Submit
+              {isUploading ? "Uploading..." : "Submit"}
             </Button>
           </form>
         </Form>

@@ -67,7 +67,11 @@ const MenuItemPage = () => {
               titleBadge={item.dish_category}
               tags={item.dish_tags}
               description={item.dish_recipe}
-              imageUrl="https://www.livofy.com/health/wp-content/uploads/2023/05/Add-a-heading-6.png"
+              imageUrl={
+                item.dish_image?.length
+                  ? item.dish_image
+                  : "https://www.livofy.com/health/wp-content/uploads/2023/05/Add-a-heading-6.png"
+              }
               buttonText={item.dish_price}
               onEdit={() => {
                 setIsDrawerOpen(true);

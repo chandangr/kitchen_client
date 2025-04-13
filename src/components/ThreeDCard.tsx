@@ -92,12 +92,12 @@ export function ThreeDCard({
             </div>
           );
         })}
-        <CardItem translateZ={translateZ}>
+        <CardItem translateZ={translateZ} className="w-[100%]">
           <img
             src={imageUrl}
             height="1000"
             width="1000"
-            className="h-60 w-full object-contain rounded-xl group-hover/card:shadow-xl"
+            className="h-60 object-contain rounded-xl group-hover/card:shadow-xl"
             alt={title}
           />
         </CardItem>
