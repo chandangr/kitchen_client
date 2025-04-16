@@ -515,6 +515,8 @@ const formSchema = z.object({
   cuisine: z.string().nonempty("Cuisine is required."),
 });
 
+export type DishItems = z.infer<typeof formSchema>;
+
 const cuisineList = Object.keys(cuisineTypes).map((cuisine) => cuisine);
 
 export type DishItem = z.infer<typeof formSchema> & { id?: string };

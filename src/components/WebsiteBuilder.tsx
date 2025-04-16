@@ -1,3 +1,4 @@
+import MenuBoard from "@/components/MenuBoard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -1019,16 +1020,9 @@ const WebsiteBuilder = (props: WebsiteBuilderProps) => {
                 </Button>
               </div>
               <div className="w-1/2 flex justify-center items-center">
-                <motion.img
-                  src={
-                    !isFile(form.watch("featuredMenuSection.featuredImage"))
-                      ? form.watch("featuredMenuSection.featuredImage")
-                      : URL.createObjectURL(
-                          form.watch("featuredMenuSection.featuredImage")
-                        )
-                  }
-                  alt="Featured Menu"
-                  className="mt-4"
+                <MenuBoard
+                  height={state.isPreview ? "70vh" : "50vh"}
+                  className="w-full rounded-lg shadow-xl p-4"
                 />
               </div>
             </div>
