@@ -35,10 +35,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [authUser, setAuthUser] = useState<User>();
   const [session, setSession] = useState<SessionData | undefined>();
 
+  // Load session data from localStorage on initial render
+  React.useEffect(() => {
+    const storedSession = localStorage.getItem("session");
+    const storedUser = localStorage.getItem("user");
+    if (storedSession && storedUser) {
+      setSession(JSON.parse(storedSession));
+      setAuthUser(JSON.parse(storedUser));
+      setIsAuthenticated(true);
+    }
+  }, []);
+
   const setSessionData = (session: SessionData) => {
     setSession(session);
     setAuthUser(session.user);
     setIsAuthenticated(!!session.user);
+    // Store session and user in localStorage
+    localStorage.setItem("session", JSON.stringify(session));
+    localStorage.setItem("user", JSON.stringify(session.user));
   };
 
   const signup = async (formdata: SignupFormData) => {
@@ -63,6 +77,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         );
         // @ts-expect-error --  this is preset
         supabase.auth?.storage?.setItem("client", JSON.stringify(clientData));
+        // Store session and user in localStorage
+        localStorage.setItem("session", JSON.stringify(data.session));
+        localStorage.setItem("user", JSON.stringify(data.user));
       }
       toast.success("User signed up successfully.");
     } catch (error) {
@@ -100,8 +117,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       setSession(data?.session);
       // @ts-expect-error --  this is preset
       supabase.auth?.storage?.setItem("client", JSON.stringify(clientData));
-      // @ts-expect-error --  this is preset
-      supabase.auth?.storage?.setItem("user", JSON.stringify(data?.user));
+      // Store session and user in localStorage
+      localStorage.setItem("session", JSON.stringify(data.session));
+      localStorage.setItem("user", JSON.stringify(data.user));
       setAuthUser(data?.user);
       setIsAuthenticated(!!data?.user);
 
@@ -118,11 +136,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     supabase.auth.signOut();
     // @ts-expect-error --  this is preset
     supabase.auth?.storage?.removeItem("client");
-    // @ts-expect-error --  this is preset
-    supabase.auth?.storage?.removeItem("user");
+    // Clear localStorage
+    localStorage.removeItem("session");
+    localStorage.removeItem("user");
     setIsAuthenticated(false);
     setSession(undefined);
-    window.location.href = "/kitchen_client"; // Navigate to login page after signup
+    setAuthUser(undefined);
+    window.location.href = "/kitchen_client/"; // Navigate to login page after signup
   };
 
   return (
