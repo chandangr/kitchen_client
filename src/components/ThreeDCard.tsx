@@ -14,8 +14,10 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Edit, MoreHorizontal, Trash } from "lucide-react";
+import { motion } from "motion/react";
 import { useState } from "react";
 import { Badge } from "./ui/badge";
+import { FileItem, isFile } from "./ui/file-upload";
 import { Label } from "./ui/label";
 
 // Define props interface
@@ -24,7 +26,7 @@ interface ThreeDCardProps {
   titleBadge?: string;
   tags?: string[];
   description?: string;
-  imageUrl: string;
+  imageUrl: string | FileItem;
   tourLink?: string;
   buttonText: string;
   descriptionList?: {
@@ -93,9 +95,8 @@ export function ThreeDCard({
           );
         })}
         <CardItem translateZ={translateZ} className="w-[100%]">
-          <img
-            src={imageUrl}
-            height="1000"
+          <motion.img
+            src={!isFile(imageUrl) ? imageUrl : URL.createObjectURL(imageUrl)}
             width="1000"
             className="h-60 object-contain rounded-xl group-hover/card:shadow-xl"
             alt={title}

@@ -1,7 +1,10 @@
-import { uploadFileToSupabase } from "@/services/fileUploadService";
+import {
+  deleteFileFromSupabase,
+  uploadFileToSupabase,
+} from "@/services/fileUploadService";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CloudUpload } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -524,6 +527,14 @@ export type DishItemDrawerProps = {
   initialValues?: Partial<DishItem>;
 };
 
+// Define FileItem type to match the one in file-upload.tsx
+type FileItem = File | string;
+
+// Helper function to check if an item is a File object
+const isFile = (item: FileItem): item is File => {
+  return item instanceof File;
+};
+
 const DishItemDrawer = ({
   isOpen,
   onClose,
@@ -531,8 +542,10 @@ const DishItemDrawer = ({
   onEdit,
   initialValues,
 }: DishItemDrawerProps) => {
-  const [files, setFiles] = useState<File[] | null>(null);
+  const [files, setFiles] = useState<FileItem[] | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [currentImagePath, setCurrentImagePath] = useState<string | null>(null);
+  const [imageToDelete, setImageToDelete] = useState<string | null>(null);
   const dropZoneConfig = {
     maxFiles: 1,
     maxSize: 1024 * 1024 * 4, // 4MB
@@ -553,23 +566,66 @@ const DishItemDrawer = ({
     },
   });
 
+  console.log("initialValues", initialValues);
+
+  // Initialize files state with initialValue if provided
+  useEffect(() => {
+    if (initialValues?.dish_image) {
+      setFiles([initialValues.dish_image]);
+
+      // Extract the path from the URL if it's a Supabase URL
+      if (initialValues.dish_image.includes("supabase.co")) {
+        const urlParts = initialValues.dish_image.split("/");
+        const path = urlParts.slice(urlParts.indexOf("dishes") + 1).join("/");
+        setCurrentImagePath(`dishes/${path}`);
+      }
+    }
+  }, [initialValues?.dish_image]);
+
+  // Handle file deletion from UI only
+  const handleFileDelete = async (fileToDelete: FileItem) => {
+    try {
+      if (
+        typeof fileToDelete === "string" &&
+        fileToDelete.includes("supabase.co")
+      ) {
+        const urlParts = fileToDelete.split("/");
+        const path = urlParts.slice(urlParts.indexOf("dishes") + 1).join("/");
+        // Store the path for deletion on form submit
+        setImageToDelete(`dishes/${path}`);
+      }
+      // Remove from UI state
+      setFiles(null);
+      form.setValue("dish_image", "");
+    } catch (error) {
+      console.error("Error handling file deletion:", error);
+    }
+  };
+
   const onSubmit = async (values: DishItem) => {
     try {
       setIsUploading(true);
 
+      // Delete the old image from Supabase if marked for deletion
+      if (imageToDelete) {
+        await deleteFileFromSupabase(imageToDelete);
+        setImageToDelete(null);
+      }
+
       // Upload images if files are selected
       if (files && files.length > 0) {
-        const uploadPromises = files.map((file) => uploadFileToSupabase(file));
-        const uploadResults = await Promise.all(uploadPromises);
+        const file = files[0]; // We only handle one file at a time
 
-        // Filter out failed uploads and get successful URLs
-        const successfulUploads = uploadResults.filter(
-          (result): result is NonNullable<typeof result> => result !== null
-        );
-
-        if (successfulUploads.length > 0) {
-          // Use the first image URL as the dish image
-          values.dish_image = successfulUploads[0].url;
+        if (isFile(file)) {
+          // If it's a File object, upload it
+          const uploadResult = await uploadFileToSupabase(file);
+          if (uploadResult) {
+            values.dish_image = uploadResult.url;
+            setCurrentImagePath(uploadResult.path);
+          }
+        } else {
+          // If it's already a URL, use it directly
+          values.dish_image = file;
         }
       }
 
@@ -897,11 +953,21 @@ const DishItemDrawer = ({
                     <FormControl>
                       <FileUploader
                         value={files}
-                        onValueChange={setFiles}
+                        onValueChange={(newFiles) => {
+                          setFiles(newFiles);
+                          // Also update the form field value
+                          if (!newFiles || newFiles.length === 0) {
+                            form.setValue("dish_image", "");
+                          }
+                        }}
+                        onDelete={handleFileDelete}
                         dropzoneOptions={dropZoneConfig}
                         className="outline-dashed outline-1 outline-slate-500 rounded-md"
                         size="sm"
                         showPreview={true}
+                        initialValue={
+                          typeof files?.[0] === "string" ? files[0] : null
+                        }
                       >
                         <FileInput
                           id="fileInput"

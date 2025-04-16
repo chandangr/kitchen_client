@@ -1,13 +1,14 @@
 import { ColourfulText } from "@/components/ui/colourful-text";
 import { motion } from "motion/react";
+import { FileItem, isFile } from "./ui/file-upload";
 
 export type MotionTextProps = {
   title?: string;
 
-  companyLogo?: string;
+  companyLogo: FileItem | string;
   motionText?: string;
   endText?: string;
-  backgroundImage?: string;
+  backgroundImage: FileItem | string;
   titleColor?: string;
   subtitleColor?: string;
   subtitleText?: string;
@@ -30,12 +31,20 @@ export function HeroBackgroundSection({
   return (
     <div className="h-screen w-full flex items-center justify-center relative overflow-hidden">
       <motion.img
-        src={companyLogo}
+        src={
+          !isFile(companyLogo) ? companyLogo : URL.createObjectURL(companyLogo)
+        }
         alt="Company Logo"
         className="h-12 mb-4 absolute top-0 left-0"
+        loading="lazy"
       />
+
       <motion.img
-        src={backgroundImage}
+        src={
+          !isFile(backgroundImage)
+            ? backgroundImage
+            : URL.createObjectURL(backgroundImage)
+        }
         className="h-full w-full object-cover absolute inset-0 pointer-events-none"
         initial={{ opacity: 0 }}
         animate={{ opacity: 0.5 }}

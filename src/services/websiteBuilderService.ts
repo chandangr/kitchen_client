@@ -1,9 +1,54 @@
+import { FileItem, isFile } from "@/components/ui/file-upload";
 import { supabase } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { updateClientWebsiteId } from "./clientService";
+import { uploadFileToSupabase } from "./fileUploadService";
+import { UploadFileResponse, WebsiteData } from "./types";
 import { authorizeUser } from "./utils";
 
-export const createClientWebsite = async (data: any) => {
+interface WebsiteBuilderData {
+  user_id: string;
+  headerSection: {
+    title: string;
+    subtitle: string;
+    description: string;
+    headerBackground: string;
+    companyLogo: string;
+    titleColor: string;
+    subtitleColor: string;
+    descriptionColor: string;
+  };
+  introSection: {
+    introTitle: string;
+    introDescription: string;
+    introMedia: string;
+    introTitleColor: string;
+    introDescriptionColor: string;
+  };
+  introMediaSection: {
+    introImage: string;
+  };
+  featuredMenuSection: {
+    featuredTitle: string;
+    featuredDescription: string;
+    featuredImage: string;
+    featuredTitleColor: string;
+    featuredDescriptionColor: string;
+  };
+  footerSection: {
+    location: string;
+    instagram: string;
+    facebook: string;
+  };
+}
+
+interface CreateClientWebsiteData {
+  website_name: string;
+  description: string;
+  website_logo?: string;
+}
+
+export const createClientWebsite = async (data: CreateClientWebsiteData) => {
   const userDetails = authorizeUser();
   if (!userDetails) return;
 
@@ -85,4 +130,124 @@ export const getClientKitchenWebsiteData = async (id: string) => {
   }
 
   return data;
+};
+
+export async function saveWebsiteData(
+  data: WebsiteBuilderData
+): Promise<WebsiteBuilderData> {
+  try {
+    // Extract user_id from the data
+    const userId = data.user_id;
+
+    // Create the website_data object with the new structure
+    const websiteData = {
+      headerSection: data.headerSection,
+      introSection: data.introSection,
+      introMediaSection: data.introMediaSection,
+      featuredMenuSection: data.featuredMenuSection,
+      footerSection: data.footerSection,
+    };
+
+    // Update only the website_data column for the specific user_id
+    const { data: savedData, error } = await supabase
+      .from("cloud_kitchen_website")
+      .update({ website_data: websiteData })
+      .eq("user_id", userId)
+      .select()
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    return savedData as WebsiteBuilderData;
+  } catch (error) {
+    console.error("Error saving website data:", error);
+    throw error;
+  }
+}
+
+export async function getWebsiteDataByUserId(
+  userId: string
+): Promise<WebsiteData | null> {
+  try {
+    const { data, error } = await supabase
+      .from("cloud_kitchen_website")
+      .select("*")
+      .eq("user_id", userId)
+      .single();
+
+    if (error) {
+      if (error.code === "PGRST116") {
+        // No data found
+        return null;
+      }
+      throw error;
+    }
+
+    return data as WebsiteData;
+  } catch (error) {
+    console.error("Error fetching website data:", error);
+    throw error;
+  }
+}
+
+export async function uploadMultipleFiles(
+  files: FileItem[]
+): Promise<UploadFileResponse[]> {
+  try {
+    const uploadPromises = files.map((file, index) => {
+      if (isFile(file)) {
+        return uploadFileToSupabase(
+          file,
+          "website-builder-images",
+          "website-images"
+        );
+      }
+      // If it's already a URL, return a mock response
+      return Promise.resolve({
+        path: `file-${index + 1}`,
+        url: file,
+      });
+    });
+
+    const results = await Promise.all(uploadPromises);
+
+    // Filter out null values and ensure type safety
+    return results.filter(
+      (result): result is UploadFileResponse => result !== null
+    );
+  } catch (error) {
+    console.error("Error uploading multiple files:", error);
+    throw error;
+  }
+}
+
+export const getWebsiteBuilderData = async (
+  userId: string
+): Promise<WebsiteBuilderData | null> => {
+  try {
+    const { data, error } = await supabase
+      .from("cloud_kitchen_website")
+      .select("website_data")
+      .eq("user_id", userId)
+      .single();
+
+    if (error) {
+      console.error("Error fetching website builder data:", error);
+      return null;
+    }
+
+    if (!data) {
+      return null;
+    }
+
+    return {
+      user_id: userId,
+      ...data.website_data,
+    } as WebsiteBuilderData;
+  } catch (error) {
+    console.error("Error in getWebsiteBuilderData:", error);
+    return null;
+  }
 };

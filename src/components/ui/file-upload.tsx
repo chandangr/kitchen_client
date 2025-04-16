@@ -25,10 +25,10 @@ type DirectionOptions = "rtl" | "ltr" | undefined;
 type FileSize = "sm" | "md" | "lg";
 
 // Define a type for file items that can be either File objects or URLs
-type FileItem = File | string;
+export type FileItem = File | string;
 
 // Helper function to check if an item is a File object
-const isFile = (item: FileItem): item is File => {
+export const isFile = (item: FileItem): item is File => {
   return item instanceof File;
 };
 
@@ -62,6 +62,8 @@ type FileUploaderProps = {
   orientation?: "horizontal" | "vertical";
   size?: FileSize;
   showPreview?: boolean;
+  initialValue?: string | null;
+  onDelete?: (file: FileItem) => void;
 };
 
 const sizeClasses = {
@@ -109,6 +111,8 @@ export const FileUploader = forwardRef<
       orientation = "vertical",
       size = "md",
       showPreview = true,
+      initialValue,
+      onDelete,
       children,
       dir,
       ...props
@@ -131,20 +135,40 @@ export const FileUploader = forwardRef<
     const reSelectAll = maxFiles === 1 ? true : reSelect;
     const direction: DirectionOptions = dir === "rtl" ? "rtl" : "ltr";
 
+    // Initialize with initialValue if provided
+    useEffect(() => {
+      if (initialValue && !value) {
+        onValueChange([initialValue]);
+      }
+    }, [initialValue, value, onValueChange]);
+
+    // Update value when initialValue changes
+    useEffect(() => {
+      if (initialValue && value && value.length === 0) {
+        onValueChange([initialValue]);
+      }
+    }, [initialValue, value, onValueChange]);
+
     const removeFileFromSet = useCallback(
       (i: number) => {
         if (!value) return;
+        const fileToRemove = value[i];
         const newFiles = value.filter((_, index) => index !== i);
         onValueChange(newFiles.length > 0 ? newFiles : null);
         setActiveIndex(-1);
         setIsLOF(false);
+
+        // Call onDelete if provided
+        if (onDelete) {
+          onDelete(fileToRemove);
+        }
 
         // Reset dropzone state to allow re-uploading the same file
         if (dropzoneRef.current) {
           dropzoneRef.current.value = "";
         }
       },
-      [value, onValueChange]
+      [value, onValueChange, activeIndex, isLOF, onDelete]
     );
 
     const handleKeyDown = useCallback(
@@ -298,43 +322,61 @@ export const FileUploader = forwardRef<
           {showPreview && value && value.length > 0 && size !== "sm" && (
             <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {value.map((file, index) => (
-                <div
-                  key={index}
-                  className={cn(
-                    "relative group rounded-lg overflow-hidden border",
-                    sizeClasses[size].preview
-                  )}
-                >
-                  {!isFile(file) ? (
-                    <img
-                      src={file}
-                      alt="Uploaded image"
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                    />
-                  ) : file.type.startsWith("image/") ? (
-                    <img
-                      src={URL.createObjectURL(file)}
-                      alt={file.name}
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                <div key={index} className="flex flex-col">
+                  <div
+                    className={cn(
+                      "relative group rounded-lg overflow-hidden border",
+                      sizeClasses[size].preview
+                    )}
+                  >
+                    {!isFile(file) ? (
+                      <img
+                        src={file}
+                        alt="Uploaded image"
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                    ) : file.type.startsWith("image/") ? (
+                      <img
+                        src={URL.createObjectURL(file)}
+                        alt={file.name}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                        <span
+                          className={cn(
+                            "text-gray-500",
+                            sizeClasses[size].text
+                          )}
+                        >
+                          {file.name.split(".").pop()?.toUpperCase()}
+                        </span>
+                      </div>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => removeFileFromSet(index)}
+                      className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200 ease-in-out transform group-hover:scale-90"
+                    >
+                      <X className={cn("w-4 h-4", sizeClasses[size].icon)} />
+                    </button>
+                  </div>
+                  {(size === "md" || size === "lg") && (
+                    <div className="mt-1 text-center truncate">
                       <span
-                        className={cn("text-gray-500", sizeClasses[size].text)}
+                        className={cn(
+                          "text-gray-600 text-xs",
+                          sizeClasses[size].text
+                        )}
                       >
-                        {file.name.split(".").pop()?.toUpperCase()}
+                        {!isFile(file)
+                          ? file.split("/").pop() || "Image"
+                          : file.name}
                       </span>
                     </div>
                   )}
-                  <button
-                    type="button"
-                    onClick={() => removeFileFromSet(index)}
-                    className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <X className={cn("w-4 h-4", sizeClasses[size].icon)} />
-                  </button>
                 </div>
               ))}
             </div>
@@ -349,7 +391,7 @@ export const FileUploader = forwardRef<
               <button
                 type="button"
                 onClick={() => removeFileFromSet(0)}
-                className="p-1 text-red-500 hover:text-red-600 transition-colors"
+                className="p-1 text-red-500 hover:text-red-600 transition-all duration-200 ease-in-out transform hover:scale-90"
               >
                 <X className="w-4 h-4" />
               </button>
