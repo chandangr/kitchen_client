@@ -502,6 +502,10 @@ const formSchema = z.object({
   dish_image: z.string().optional(),
   dish_recipe: z.string().nonempty("Dish recipe is required."),
   dish_calorie_count: z.string().nonempty("Calories is required."),
+  dish_count: z
+    .string()
+    .nonempty("Dish count is required.")
+    .transform((val) => parseInt(val, 10)),
   dish_price: z.string().nonempty("Price is required."),
   dish_tags: z.array(z.string()).min(1, "At least one tag is required."),
   dish_category: z.string().nonempty("Dish category is required."),
@@ -567,8 +571,6 @@ const DishItemDrawer = ({
       dish_image: initialValues?.dish_image || "",
     },
   });
-
-  console.log("initialValues", initialValues);
 
   // Initialize files state with initialValue if provided
   useEffect(() => {
@@ -692,6 +694,23 @@ const DishItemDrawer = ({
                     <FormControl>
                       <Input
                         placeholder="Enter dish calorie count"
+                        type="number"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="dish_count"
+                render={({ field }) => (
+                  <FormItem className="w-full">
+                    <FormLabel>Dish Count</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Enter dish count"
                         type="number"
                         {...field}
                       />

@@ -79,7 +79,14 @@ const MenuItemPage = () => {
               }}
               onDelete={() => handleDeleteMenuItem(item?.id)}
               descriptionList={[
-                { title: "Price", value: `${item.dish_price} rs` },
+                {
+                  title: "Price",
+                  value: `${item.dish_price} rs`,
+                },
+                {
+                  title: "Count",
+                  value: item?.dish_count ? item.dish_count.toString() : "1",
+                },
                 { title: "Calorie Count", value: item.dish_calorie_count },
               ]}
             />

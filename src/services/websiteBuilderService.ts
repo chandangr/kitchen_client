@@ -80,7 +80,6 @@ const uploadLogo = async (file: File) => {
 };
 
 export const createClientWebsite = async (data: CreateClientWebsiteData) => {
-  console.log("data", data);
   const userDetails = authorizeUser();
   if (!userDetails) return;
 
