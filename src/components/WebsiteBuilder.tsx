@@ -37,6 +37,7 @@ import {
   FormLabel,
   FormMessage,
 } from "./ui/form";
+import { useSidebar } from "./ui/sidebar";
 
 const formSchema = z.object({
   headerSection: z.object({
@@ -129,6 +130,7 @@ const WebsiteBuilder = (props: WebsiteBuilderProps) => {
   } = props;
 
   const data = useAuth();
+  const { toggleSidebar } = useSidebar();
   const authUser = data.authUser;
 
   const form = useForm<FormValues>({
@@ -205,6 +207,7 @@ const WebsiteBuilder = (props: WebsiteBuilderProps) => {
   }, []);
 
   const togglePreview = () => {
+    toggleSidebar();
     setState((prevState) => ({
       ...prevState,
       isPreview: !prevState.isPreview,
