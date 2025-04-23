@@ -49,7 +49,7 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
     <>
       <header className="flex justify-between gap-20 items-center p-4 bg-background shadow-md">
         <div className="flex-1">
-          <h1 className="text-xl font-bold">
+          <h1 className="text-xl font-bold px-10 md:px-0">
             {websiteKitchenData?.website_name}
           </h1>
           <p className="text-sm text-muted-foreground line-clamp-2">

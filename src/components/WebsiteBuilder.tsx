@@ -318,9 +318,9 @@ const WebsiteBuilder = (props: WebsiteBuilderProps) => {
           </Button>
         </div>
       </div>
-      <div className="flex">
+      <div className="flex flex-col md:flex-row">
         {!state.isPreview && (
-          <div className="w-1/3 p-4 h-400px">
+          <div className="w-full md:w-1/3 p-4 h-auto">
             <Form {...form}>
               <form className="space-y-4">
                 <Accordion type="single" collapsible>
@@ -913,7 +913,9 @@ const WebsiteBuilder = (props: WebsiteBuilderProps) => {
           </div>
         )}
         <div
-          className={`h-full ${state.isPreview ? "w-full p-4" : "w-2/3 p-4"}`}
+          className={`h-full ${
+            state.isPreview ? "w-full p-4" : "w-full md:w-2/3 p-4"
+          }`}
         >
           <div
             className={`relative p-4 bg-white rounded ${
@@ -946,7 +948,7 @@ const WebsiteBuilder = (props: WebsiteBuilderProps) => {
                 {form.watch("introSection.introTitle")}
               </h2>
               <p
-                className="mt-4"
+                className="mt-4 overflow-hidden line-clamp-5"
                 style={{
                   color: form.watch("introSection.introDescriptionColor"),
                 }}
@@ -1003,7 +1005,7 @@ const WebsiteBuilder = (props: WebsiteBuilderProps) => {
                   {form.watch("featuredMenuSection.featuredTitle")}
                 </h2>
                 <p
-                  className="mt-4"
+                  className="mt-4 overflow-hidden line-clamp-5"
                   style={{
                     color: form.watch(
                       "featuredMenuSection.featuredDescriptionColor"

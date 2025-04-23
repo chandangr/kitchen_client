@@ -655,7 +655,7 @@ const DishItemDrawer = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-[70%]">
+      <DialogContent className="w-full max-w-lg p-4">
         <DialogHeader>
           <DialogTitle>
             {initialValues ? "Edit Dish Item" : "Add Dish Item"}
@@ -664,9 +664,9 @@ const DishItemDrawer = ({
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-4 p-1 max-h-[calc(100vh-200px)] overflow-auto"
+            className="space-y-4 max-h-[calc(100vh-200px)] overflow-auto"
           >
-            <div className="flex gap-4">
+            <div className="flex flex-col gap-4 md:flex-row md:gap-4">
               <FormField
                 control={form.control}
                 name="dish_name"
@@ -702,6 +702,9 @@ const DishItemDrawer = ({
                   </FormItem>
                 )}
               />
+            </div>
+
+            <div className="flex flex-col gap-4 md:flex-row md:gap-4">
               <FormField
                 control={form.control}
                 name="dish_count"
@@ -738,92 +741,94 @@ const DishItemDrawer = ({
                 )}
               />
             </div>
-            <div>
-              <div className="flex gap-4">
-                <FormField
-                  control={form.control}
-                  name="cuisine"
-                  render={({ field }) => (
-                    <FormItem className="w-full">
-                      <FormLabel>Cuisine</FormLabel>
-                      <Select
-                        value={field.value}
-                        onValueChange={(val) => {
-                          field.onChange?.(val);
-                          form.setValue("cuisine_type", "");
-                        }}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select cuisine types" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {cuisineList.map((cuisine, index) => (
+
+            <div className="flex flex-col gap-4 md:flex-row md:gap-4">
+              <FormField
+                control={form.control}
+                name="cuisine"
+                render={({ field }) => (
+                  <FormItem className="w-full">
+                    <FormLabel>Cuisine</FormLabel>
+                    <Select
+                      value={field.value}
+                      onValueChange={(val) => {
+                        field.onChange?.(val);
+                        form.setValue("cuisine_type", "");
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select cuisine types" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {cuisineList.map((cuisine, index) => (
+                          <SelectItem key={index} value={cuisine}>
+                            {cuisine}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="cuisine_type"
+                render={({ field }) => (
+                  <FormItem className="w-full">
+                    <FormLabel>Cuisine Type</FormLabel>
+                    <Select
+                      disabled={!isCuisinePresent}
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select cuisine types" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {cuisineTypes?.[selectedCuisine]?.map(
+                          (cuisine, index) => (
                             <SelectItem key={index} value={cuisine}>
                               {cuisine}
                             </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="cuisine_type"
-                  render={({ field }) => (
-                    <FormItem className="w-full">
-                      <FormLabel>Cuisine Type</FormLabel>
-                      <Select
-                        disabled={!isCuisinePresent}
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select cuisine types" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {cuisineTypes?.[selectedCuisine]?.map(
-                            (cuisine, index) => (
-                              <SelectItem key={index} value={cuisine}>
-                                {cuisine}
-                              </SelectItem>
-                            )
-                          )}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="dish_dietary"
-                  render={({ field }) => (
-                    <FormItem className="w-full">
-                      <FormLabel>Dish Dietary</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select dish dietary options" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {dishDietaries.map((dietary, index) => (
-                            <SelectItem key={index} value={dietary}>
-                              {dietary}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+                          )
+                        )}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
-            <div className="flex gap-4">
+
+            <div className="flex flex-col gap-4 md:flex-row md:gap-4">
+              <FormField
+                control={form.control}
+                name="dish_dietary"
+                render={({ field }) => (
+                  <FormItem className="w-full">
+                    <FormLabel>Dish Dietary</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select dish dietary options" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {dishDietaries.map((dietary, index) => (
+                          <SelectItem key={index} value={dietary}>
+                            {dietary}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               <FormField
                 control={form.control}
                 name="dish_category"
@@ -849,7 +854,9 @@ const DishItemDrawer = ({
                   </FormItem>
                 )}
               />
+            </div>
 
+            <div className="flex flex-col gap-4 md:flex-row md:gap-4">
               <FormField
                 control={form.control}
                 name="dish_type"
@@ -902,7 +909,8 @@ const DishItemDrawer = ({
                 )}
               />
             </div>
-            <div className="flex gap-4">
+
+            <div className="flex flex-col gap-4 md:flex-row md:gap-4">
               <FormField
                 control={form.control}
                 name="dish_cooking_methods"
@@ -928,6 +936,7 @@ const DishItemDrawer = ({
                   </FormItem>
                 )}
               />
+
               <FormField
                 control={form.control}
                 name="dish_tags"
@@ -947,66 +956,66 @@ const DishItemDrawer = ({
                 )}
               />
             </div>
-            <div className="flex gap-4">
-              <FormField
-                control={form.control}
-                name="dish_recipe"
-                render={({ field }) => (
-                  <FormItem className="w-full">
-                    <FormLabel>Dish Recipe (Summary)</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Enter dish recipe (Summary)"
-                        className="resize-none min-h-[115px]"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="dish_image"
-                render={({ field }) => (
-                  <FormItem className="w-full">
-                    <FormLabel>Dish Image</FormLabel>
-                    <FormControl>
-                      <FileUploader
-                        value={files}
-                        onValueChange={(newFiles) => {
-                          setFiles(newFiles);
-                          // Also update the form field value
-                          if (!newFiles || newFiles.length === 0) {
-                            form.setValue("dish_image", "");
-                          }
-                        }}
-                        onDelete={handleFileDelete}
-                        dropzoneOptions={dropZoneConfig}
-                        className="outline-dashed outline-1 outline-slate-500 rounded-md"
-                        size="sm"
-                        showPreview={true}
-                        initialValue={
-                          typeof files?.[0] === "string" ? files[0] : null
+
+            <FormField
+              control={form.control}
+              name="dish_recipe"
+              render={({ field }) => (
+                <FormItem className="w-full">
+                  <FormLabel>Dish Recipe (Summary)</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Enter dish recipe (Summary)"
+                      className="resize-none min-h-[115px]"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="dish_image"
+              render={({ field }) => (
+                <FormItem className="w-full">
+                  <FormLabel>Dish Image</FormLabel>
+                  <FormControl>
+                    <FileUploader
+                      value={files}
+                      onValueChange={(newFiles) => {
+                        setFiles(newFiles);
+                        // Also update the form field value
+                        if (!newFiles || newFiles.length === 0) {
+                          form.setValue("dish_image", "");
                         }
+                      }}
+                      onDelete={handleFileDelete}
+                      dropzoneOptions={dropZoneConfig}
+                      className="outline-dashed outline-1 outline-slate-500 rounded-md"
+                      size="sm"
+                      showPreview={true}
+                      initialValue={
+                        typeof files?.[0] === "string" ? files[0] : null
+                      }
+                    >
+                      <FileInput
+                        id="fileInput"
+                        className="h-9 px-3 py-1"
+                        {...field}
                       >
-                        <FileInput
-                          id="fileInput"
-                          className="h-9 px-3 py-1"
-                          {...field}
-                        >
-                          <div className="flex items-center gap-2 text-sm text-gray-500">
-                            <CloudUpload className="w-4 h-4" />
-                            <span>Choose file</span>
-                          </div>
-                        </FileInput>
-                      </FileUploader>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-500">
+                          <CloudUpload className="w-4 h-4" />
+                          <span>Choose file</span>
+                        </div>
+                      </FileInput>
+                    </FileUploader>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <Button
               type="submit"
