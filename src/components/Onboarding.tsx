@@ -18,8 +18,16 @@ import { z } from "zod";
 // Step 2 Schema
 const onboardingSchema = z.object({
   website_name: z.string().nonempty("Website name is required"),
+  website_subtitle: z.string().nonempty("Website subtitle is required"),
   description: z.string().nonempty("Description is required"),
+  about_us: z.string().nonempty("About Us is required"),
   website_logo: z.any().optional(), // Adjust as needed for file handling
+  social_links: z.object({
+    instagram: z.string().url("Invalid Instagram URL").optional(),
+    twitter: z.string().url("Invalid Twitter URL").optional(),
+    facebook: z.string().url("Invalid Facebook URL").optional(),
+  }),
+  location: z.string().optional(),
 });
 
 const Onboarding = () => {
@@ -53,9 +61,11 @@ const Onboarding = () => {
       <Form {...form}>
         <form
           onSubmit={handleSubmit(onSubmitStep)}
-          className="space-y-4 w-full max-w-md"
+          className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-4xl"
         >
-          <h2 className="text-xl font-semibold mb-4">Website Information:</h2>
+          <h2 className="text-xl font-semibold mb-4 col-span-2">
+            Website Information:
+          </h2>
           <FormField
             control={control}
             name="website_name"
@@ -70,6 +80,25 @@ const Onboarding = () => {
                   />
                 </FormControl>
                 <FormMessage>{errors.website_name?.message}</FormMessage>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={control}
+            name="website_subtitle"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel htmlFor="website_subtitle">
+                  Website Subtitle
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    id="website_subtitle"
+                    placeholder="Website Subtitle"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage>{errors.website_subtitle?.message}</FormMessage>
               </FormItem>
             )}
           />
@@ -92,6 +121,19 @@ const Onboarding = () => {
           />
           <FormField
             control={control}
+            name="about_us"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel htmlFor="about_us">About Us</FormLabel>
+                <FormControl>
+                  <Input id="about_us" placeholder="About Us" {...field} />
+                </FormControl>
+                <FormMessage>{errors.about_us?.message}</FormMessage>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={control}
             name="website_logo"
             render={({ field }) => (
               <FormItem>
@@ -104,7 +146,72 @@ const Onboarding = () => {
               </FormItem>
             )}
           />
-          <Button type="submit" className="mt-4">
+          <h2 className="text-xl font-semibold mb-4 col-span-2">
+            Social Links:
+          </h2>
+          <FormField
+            control={control}
+            name="social_links.instagram"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel htmlFor="instagram">Instagram</FormLabel>
+                <FormControl>
+                  <Input
+                    id="instagram"
+                    placeholder="Instagram URL"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage>
+                  {errors.social_links?.instagram?.message}
+                </FormMessage>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={control}
+            name="social_links.twitter"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel htmlFor="twitter">Twitter</FormLabel>
+                <FormControl>
+                  <Input id="twitter" placeholder="Twitter URL" {...field} />
+                </FormControl>
+                <FormMessage>
+                  {errors.social_links?.twitter?.message}
+                </FormMessage>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={control}
+            name="social_links.facebook"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel htmlFor="facebook">Facebook</FormLabel>
+                <FormControl>
+                  <Input id="facebook" placeholder="Facebook URL" {...field} />
+                </FormControl>
+                <FormMessage>
+                  {errors.social_links?.facebook?.message}
+                </FormMessage>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={control}
+            name="location"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel htmlFor="location">Location</FormLabel>
+                <FormControl>
+                  <Input id="location" placeholder="Location" {...field} />
+                </FormControl>
+                <FormMessage>{errors.location?.message}</FormMessage>
+              </FormItem>
+            )}
+          />
+          <Button type="submit" className="mt-4 col-span-2">
             Submit
           </Button>
         </form>

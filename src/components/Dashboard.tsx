@@ -23,9 +23,9 @@ const Dashboard = () => {
                 <CardTitle>Total Revenue</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-semibold">$45,231.89</div>
+                <div className="text-3xl font-semibold">$0</div>
                 <div className="text-sm text-muted-foreground">
-                  +20.1% from last month
+                  +0% from last month
                 </div>
               </CardContent>
             </Card>
@@ -34,9 +34,9 @@ const Dashboard = () => {
                 <CardTitle>Subscriptions</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-semibold">+2,350</div>
+                <div className="text-3xl font-semibold">0</div>
                 <div className="text-sm text-muted-foreground">
-                  +180.1% from last month
+                  +0% from last month
                 </div>
               </CardContent>
             </Card>
@@ -45,9 +45,9 @@ const Dashboard = () => {
                 <CardTitle>Sales</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-semibold">+12,234</div>
+                <div className="text-3xl font-semibold">0</div>
                 <div className="text-sm text-muted-foreground">
-                  +19% from last month
+                  +0% from last month
                 </div>
               </CardContent>
             </Card>
@@ -60,48 +60,58 @@ const Dashboard = () => {
           <div className="mt-4">
             <div className="flex flex-col space-y-2">
               {[
-                {
-                  name: "Olivia Martin",
-                  email: "olivia.martin@email.com",
-                  amount: "$1,999.00",
-                },
-                {
-                  name: "Jackson Lee",
-                  email: "jackson.lee@email.com",
-                  amount: "$39.00",
-                },
-                {
-                  name: "Isabella Nguyen",
-                  email: "isabella.nguyen@email.com",
-                  amount: "$299.00",
-                },
-                {
-                  name: "William Kim",
-                  email: "william@email.com",
-                  amount: "$99.00",
-                },
-                {
-                  name: "Sofia Davis",
-                  email: "sofia.davis@email.com",
-                  amount: "$39.00",
-                },
-              ].map((sale) => (
-                <div
-                  key={sale.name}
-                  className="flex items-center justify-between p-4 border-b"
-                >
-                  <div className="flex items-center">
-                    <Avatar className="mr-2" />
-                    <div>
-                      <div className="font-semibold">{sale.name}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {sale.email}
+                // {
+                //   name: "Olivia Martin",
+                //   email: "olivia.martin@email.com",
+                //   amount: "$1,999.00",
+                // },
+                // {
+                //   name: "Jackson Lee",
+                //   email: "jackson.lee@email.com",
+                //   amount: "$39.00",
+                // },
+                // {
+                //   name: "Isabella Nguyen",
+                //   email: "isabella.nguyen@email.com",
+                //   amount: "$299.00",
+                // },
+                // {
+                //   name: "William Kim",
+                //   email: "william@email.com",
+                //   amount: "$99.00",
+                // },
+                // {
+                //   name: "Sofia Davis",
+                //   email: "sofia.davis@email.com",
+                //   amount: "$39.00",
+                // },
+              ].length === 0 ? (
+                <div className="flex items-center justify-center p-4">
+                  <span className="text-lg font-semibold text-gray-500">
+                    No Data Found
+                  </span>
+                </div>
+              ) : (
+                [
+                  // ... existing data mapping ...
+                ].map((sale) => (
+                  <div
+                    key={sale.name}
+                    className="flex items-center justify-between p-4 border-b"
+                  >
+                    <div className="flex items-center">
+                      <Avatar className="mr-2" />
+                      <div>
+                        <div className="font-semibold">{sale.name}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {sale.email}
+                        </div>
                       </div>
                     </div>
+                    <div className="font-semibold">{sale.amount}</div>
                   </div>
-                  <div className="font-semibold">{sale.amount}</div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
         </div>
@@ -120,7 +130,10 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <table className="min-w-full">
-                <thead>
+                <span className="text-lg font-semibold text-gray-500">
+                  No Data Found
+                </span>
+                {/* <thead>
                   <tr>
                     <th className="text-left">Status</th>
                     <th className="text-left">Email</th>
@@ -135,9 +148,9 @@ const Dashboard = () => {
                       <td>{payment.amount}</td>
                     </tr>
                   ))}
-                </tbody>
+                </tbody> */}
               </table>
-              <div className="flex justify-between mt-4">
+              {/* <div className="flex justify-between mt-4">
                 <span>0 of {paymentsData.length} row(s) selected.</span>
                 <div>
                   <Button variant="outline" className="mr-2">
@@ -145,7 +158,7 @@ const Dashboard = () => {
                   </Button>
                   <Button variant="outline">Next</Button>
                 </div>
-              </div>
+              </div> */}
             </CardContent>
           </Card>
           <Card className="mt-4">

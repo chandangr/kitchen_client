@@ -44,11 +44,20 @@ interface WebsiteBuilderData {
 
 interface CreateClientWebsiteData {
   website_name: string;
+  website_subtitle: string;
+  about_us: string;
   description: string;
   website_logo?: string;
+  social_links?: {
+    facebook?: string;
+    instagram?: string;
+    twitter?: string;
+  };
+  location?: string;
 }
 
 export const createClientWebsite = async (data: CreateClientWebsiteData) => {
+  console.log("data", data);
   const userDetails = authorizeUser();
   if (!userDetails) return;
 
@@ -66,15 +75,16 @@ export const createClientWebsite = async (data: CreateClientWebsiteData) => {
       .insert([
         {
           website_name: data.website_name,
+          website_subtitle: data.website_subtitle,
+          about_us: data.about_us,
           description: data.description,
           user_id: userDetails.id,
-          // website_logo: data.website_logo,
+          website_logo: data.website_logo,
           website_data: {
             headerSection: {
-              title: "Welcome to Butthi Cloud Kitchen",
-              subtitle: "Delicious, Healthy, and Convenient",
-              description:
-                "Experience the best in healthy and convenient eating with Butthi Cloud Kitchen. Our mission is to provide nutritious, delicious meals that fit your lifestyle.",
+              title: `Welcome to ${data.website_name} Cloud Kitchen`,
+              subtitle: data.website_subtitle,
+              description: data.description,
               headerBackground:
                 "https://media.istockphoto.com/id/1316145932/photo/table-top-view-of-spicy-food.jpg?s=612x612&w=0&k=20&c=eaKRSIAoRGHMibSfahMyQS6iFADyVy1pnPdy1O5rZ98=",
               companyLogo:
@@ -82,8 +92,7 @@ export const createClientWebsite = async (data: CreateClientWebsiteData) => {
             },
             introSection: {
               introTitle: "ABOUT US",
-              introDescription:
-                "Butthi Cloud Kitchen is dedicated to making healthy eating easy and enjoyable. Our meals are crafted with fresh, high-quality ingredients to ensure you get the best nutrition without compromising on taste. Whether you are looking for a quick lunch or a hearty dinner, we have something for everyone.",
+              introDescription: data.about_us,
               introMedia:
                 "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Good_Food_Display_-_NCI_Visuals_Online.jpg/800px-Good_Food_Display_-_NCI_Visuals_Online.jpg",
             },
@@ -99,9 +108,13 @@ export const createClientWebsite = async (data: CreateClientWebsiteData) => {
                 "https://img.freepik.com/free-vector/burgers-restaurant-menu-template_23-2149005028.jpg",
             },
             footerSection: {
-              location: "123 Healthy Street, Wellness City",
-              instagram: "https://instagram.com/butthicloudkitchen",
-              facebook: "https://facebook.com/butthicloudkitchen",
+              location: data.location || "123 Healthy Street, Wellness City",
+              instagram:
+                data.social_links?.instagram ||
+                "https://instagram.com/butthicloudkitchen",
+              facebook:
+                data.social_links?.facebook ||
+                "https://facebook.com/butthicloudkitchen",
             },
           },
         },
