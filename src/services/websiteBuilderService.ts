@@ -116,7 +116,7 @@ export const createClientWebsite = async (data: CreateClientWebsiteData) => {
             website_logo: logoUrl,
             website_data: {
               headerSection: {
-                title: `Welcome to ${data.website_name} Cloud Kitchen`,
+                title: data.website_name,
                 subtitle: data.website_subtitle,
                 description: data.description,
                 headerBackground:
@@ -201,7 +201,14 @@ export async function saveWebsiteData(
     // Update only the website_data column for the specific user_id
     const { data: savedData, error } = await supabase
       .from("cloud_kitchen_website")
-      .update({ website_data: websiteData })
+      .update({
+        website_data: websiteData,
+        website_name: websiteData?.headerSection?.title,
+        description: websiteData?.headerSection?.description,
+        website_subtitle: websiteData?.headerSection?.subtitle,
+        website_logo: websiteData?.headerSection?.companyLogo,
+        about_us: websiteData?.introSection?.introDescription,
+      })
       .eq("user_id", userId)
       .select()
       .single();
