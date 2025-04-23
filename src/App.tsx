@@ -6,7 +6,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import React, { lazy, Suspense } from "react";
+import { lazy, Suspense } from "react";
 import {
   Navigate,
   Route,
@@ -70,69 +70,66 @@ function App() {
   };
 
   return (
-    <React.StrictMode>
-      <Router basename="/kitchen_client">
-        <Routes>
-          {/* Public route */}
-          <Route path="/login" element={<LoginPage />} />
+    <Router basename="/kitchen_client">
+      <Routes>
+        {/* Public route */}
+        <Route path="/login" element={<LoginPage />} />
 
-          {/* Protected routes */}
-          <Route element={<ProtectedRoute />}>
-            <Route
-              element={
-                <SidebarProvider>
-                  <AppSidebar />
-                  <SidebarInset>
-                    <Header user={client} />
-                    <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
-                      <div className="flex items-center gap-2 px-4">
-                        <SidebarTrigger className="-ml-1" />
-                        <BreadcrumbNav />
-                      </div>
-                    </header>
-                    <div className="flex items-center gap-2 px-4">
-                      <Suspense fallback={<div>Loading...</div>}>
-                        <Routes>
-                          <Route path="/dashboard" element={<Dashboard />} />
-                          <Route path="/menu-item" element={<MenuItemPage />} />
-                          <Route path="/orders" element={<Orders />} />
-                          <Route
-                            path="/website-builder"
-                            element={<WebsiteBuilder {...defaultProps} />}
-                          />
-                        </Routes>
-                      </Suspense>
-                    </div>
-                  </SidebarInset>
-                </SidebarProvider>
-              }
-            >
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/menu-item" element={<MenuItemPage />} />
-              <Route path="/orders" element={<Orders />} />
-              <Route
-                path="/website-builder"
-                element={<WebsiteBuilder {...defaultProps} />}
-              />
-            </Route>
-          </Route>
-
-          {/* Redirect to login if no route matches */}
+        {/* Protected routes */}
+        <Route element={<ProtectedRoute />}>
           <Route
-            path="/"
             element={
-              clientDetails ? (
-                <Navigate to="/dashboard" replace />
-              ) : (
-                <Navigate to="/login" replace />
-              )
+              <SidebarProvider>
+                <AppSidebar />
+                <SidebarInset>
+                  <Header user={client} />
+                  <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+                    <div className="flex items-center gap-2 px-4">
+                      <SidebarTrigger className="-ml-1" />
+                      <BreadcrumbNav />
+                    </div>
+                  </header>
+                  <div className="flex items-center gap-2 px-4">
+                    <Suspense fallback={<div>Loading...</div>}>
+                      <Routes>
+                        <Route path="/dashboard" element={<Dashboard />} />
+                        <Route path="/menu-item" element={<MenuItemPage />} />
+                        <Route path="/orders" element={<Orders />} />
+                        <Route
+                          path="/website-builder"
+                          element={<WebsiteBuilder {...defaultProps} />}
+                        />
+                      </Routes>
+                    </Suspense>
+                  </div>
+                </SidebarInset>
+              </SidebarProvider>
             }
-          />
-          <Route path="/onboarding" element={<Onboarding />} />
-          <Route path="*" element={<Navigate to="/login" replace />} />
-        </Routes>
-      </Router>
-    </React.StrictMode>
+          >
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/menu-item" element={<MenuItemPage />} />
+            <Route path="/orders" element={<Orders />} />
+            <Route
+              path="/website-builder"
+              element={<WebsiteBuilder {...defaultProps} />}
+            />
+          </Route>
+        </Route>
+
+        {/* Redirect to login if no route matches */}
+        <Route path="/onboarding" element={<Onboarding />} />
+        <Route
+          path="*"
+          element={
+            clientDetails ? (
+              <Navigate to="/dashboard" replace />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+      </Routes>
+    </Router>
   );
 }
 

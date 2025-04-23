@@ -22,7 +22,7 @@ export const optimizeImage = async (
 ): Promise<File> => {
   return new Promise((resolve, reject) => {
     // Skip optimization for non-image files
-    if (!file.type.startsWith("image/")) {
+    if (!file?.type?.startsWith("image/")) {
       resolve(file);
       return;
     }

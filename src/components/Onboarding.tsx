@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { FileInput, FileItem, FileUploader } from "@/components/ui/file-upload";
 import {
   Form,
   FormControl,
@@ -11,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { createClientWebsite } from "@/services/websiteBuilderService";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Upload } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
@@ -21,7 +23,7 @@ const onboardingSchema = z.object({
   website_subtitle: z.string().nonempty("Website subtitle is required"),
   description: z.string().nonempty("Description is required"),
   about_us: z.string().nonempty("About Us is required"),
-  website_logo: z.any().optional(), // Adjust as needed for file handling
+  website_logo: z.instanceof(File).optional(),
   social_links: z.object({
     instagram: z.string().url("Invalid Instagram URL").optional(),
     twitter: z.string().url("Invalid Twitter URL").optional(),
@@ -43,14 +45,12 @@ const Onboarding = () => {
     formState: { errors },
   } = form;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const onSubmitStep = async (data: any) => {
     try {
       await createClientWebsite(data);
       navigate("/dashboard");
     } catch (error) {
       console.error("Failed to create website builder:", error);
-      // Optionally, you can show a toast notification or an error message here
     }
   };
 
@@ -139,9 +139,34 @@ const Onboarding = () => {
               <FormItem>
                 <FormLabel htmlFor="website_logo">Website Logo</FormLabel>
                 <FormControl>
-                  <Input id="website_logo" type="file" {...field} />
+                  <FileUploader
+                    value={field.value ? [field.value] : []}
+                    onValueChange={(files: FileItem[] | null) => {
+                      field.onChange(files?.[0] || null);
+                    }}
+                    dropzoneOptions={{
+                      accept: {
+                        "image/*": [".png", ".jpg", ".jpeg", ".gif"],
+                      },
+                      maxFiles: 1,
+                      maxSize: 5 * 1024 * 1024,
+                      multiple: false,
+                    }}
+                    showPreview
+                  >
+                    <FileInput className="border-2 border-dashed p-4 text-center">
+                      <div className="flex flex-col items-center gap-2">
+                        <Upload className="w-8 h-8 text-gray-400" />
+                        <p className="text-sm text-gray-500">
+                          Drag & drop or click to upload
+                        </p>
+                        <p className="text-xs text-gray-400">
+                          Supports: PNG, JPG, GIF (max 5MB)
+                        </p>
+                      </div>
+                    </FileInput>
+                  </FileUploader>
                 </FormControl>
-                {/* // @ts-expect-error -- this is preset */}
                 <FormMessage>{errors?.website_logo?.message}</FormMessage>
               </FormItem>
             )}
