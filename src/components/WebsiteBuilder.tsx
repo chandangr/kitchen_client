@@ -762,55 +762,6 @@ const WebsiteBuilder = (props: WebsiteBuilderProps) => {
                                 )}
                               />
                             </div>
-                            <h3 className="text-lg font-semibold">Visuals</h3>
-                            <div className="mt-2">
-                              <FormField
-                                control={form.control}
-                                name="featuredMenuSection.featuredImage"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel>Featured image</FormLabel>
-                                    <FormControl>
-                                      <FileUploader
-                                        value={field.value ? [field.value] : []}
-                                        onValueChange={(
-                                          files: FileItem[] | null
-                                        ) => {
-                                          field.onChange(files?.[0] || "");
-                                        }}
-                                        dropzoneOptions={{
-                                          accept: {
-                                            "image/*": [
-                                              ".png",
-                                              ".jpg",
-                                              ".jpeg",
-                                              ".gif",
-                                            ],
-                                          },
-                                          maxFiles: 1,
-                                          maxSize: 5 * 1024 * 1024,
-                                          multiple: false,
-                                        }}
-                                        showPreview
-                                      >
-                                        <FileInput className="border-2 border-dashed p-4 text-center">
-                                          <div className="flex flex-col items-center gap-2">
-                                            <Upload className="w-8 h-8 text-gray-400" />
-                                            <p className="text-sm text-gray-500">
-                                              Drag & drop or click to upload
-                                            </p>
-                                            <p className="text-xs text-gray-400">
-                                              Supports: PNG, JPG, GIF (max 5MB)
-                                            </p>
-                                          </div>
-                                        </FileInput>
-                                      </FileUploader>
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                            </div>
                             <div className="mt-4">
                               <h3 className="text-lg font-semibold">
                                 Appearance settings
@@ -937,12 +888,12 @@ const WebsiteBuilder = (props: WebsiteBuilderProps) => {
             />
           </div>
           <div
-            className={`p-4 bg-white rounded flex ${
+            className={`p-4 bg-white rounded flex flex-col md:flex-row ${
               state.isPreview ? "mt-[4rem]" : "mt-[18rem]"
             }`}
           >
             <div
-              className={`w-1/2 ${state.isPreview ? "h-[60vh]" : "h-[40vh]"}`}
+              className={`w-full md:w-1/2 ${state.isPreview ? "h-[60vh]" : "h-[40vh]"}`}
             >
               <h2
                 className="text-2xl font-bold"
@@ -960,7 +911,7 @@ const WebsiteBuilder = (props: WebsiteBuilderProps) => {
               </p>
               <Button className="mt-4">Read More</Button>
             </div>
-            <div className="w-1/3 flex justify-center items-center">
+            <div className="w-full md:w-1/3 flex justify-center items-center mt-4 md:mt-0">
               {form.watch("introSection.introMedia") && (
                 <ThreeDCard
                   buttonText="Read More"
@@ -972,7 +923,7 @@ const WebsiteBuilder = (props: WebsiteBuilderProps) => {
           {form.watch("introMediaSection.introImage") && (
             <a
               href="#"
-              className="block relative overflow-hidden rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300"
+              className="block relative overflow-hidden rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 mt-4"
             >
               <motion.img
                 src={
@@ -994,11 +945,11 @@ const WebsiteBuilder = (props: WebsiteBuilderProps) => {
           )}
           {form.watch("featuredMenuSection.featuredImage") && (
             <div
-              className={`p-4 bg-white rounded mt-4 flex ${
+              className={`p-4 bg-white rounded mt-4 flex flex-col md:flex-row ${
                 state.isPreview ? "h-[80vh]" : "h-[60vh]"
               }`}
             >
-              <div className="w-1/2">
+              <div className="w-full md:w-1/2 mb-4 md:mb-0">
                 <h2
                   className="text-2xl font-bold"
                   style={{
@@ -1024,7 +975,7 @@ const WebsiteBuilder = (props: WebsiteBuilderProps) => {
                   Full Menu
                 </Button>
               </div>
-              <div className="w-1/2 flex justify-center items-center">
+              <div className="w-full md:w-1/2 flex justify-center items-center">
                 <MenuBoard
                   height={state.isPreview ? "70vh" : "50vh"}
                   className="w-full rounded-lg shadow-xl p-4"
@@ -1032,7 +983,7 @@ const WebsiteBuilder = (props: WebsiteBuilderProps) => {
               </div>
             </div>
           )}
-          <div className="p-4 bg-black text-white rounded shadow mt-4 flex justify-between">
+          <div className="p-4 bg-black text-white rounded shadow mt-4 flex flex-col md:flex-row justify-between gap-8">
             <div>
               <h3 className="text-lg font-semibold">QUICK LINKS</h3>
               <ul className="mt-2">

@@ -507,7 +507,7 @@ const formSchema = z.object({
     .nonempty("Dish count is required.")
     .transform((val) => parseInt(val, 10)),
   dish_price: z.string().nonempty("Price is required."),
-  dish_tags: z.array(z.string()).min(1, "At least one tag is required."),
+  dish_tags: z.array(z.string()).optional(),
   dish_category: z.string().nonempty("Dish category is required."),
   dish_type: z.string().nonempty("Dish type is required."),
   dish_occasion: z.string().nonempty("Dish occasion is required."),
