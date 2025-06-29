@@ -14,6 +14,7 @@ import {
   saveWebsiteData,
   uploadMultipleFiles,
 } from "@/services/websiteBuilderService";
+import { getWebsiteUrl } from "@/utils/environment";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Upload } from "lucide-react";
 import { motion } from "motion/react";
@@ -319,6 +320,14 @@ const WebsiteBuilder = (props: WebsiteBuilderProps) => {
           <Button className="ml-2" onClick={form.handleSubmit(onSubmit)}>
             Save & publish
           </Button>
+          {authUser?.id && (
+            <Button 
+              className="ml-2" 
+              onClick={() => window.open(getWebsiteUrl(authUser.id), '_blank')}
+            >
+              View Website
+            </Button>
+          )}
         </div>
       </div>
       <div className="flex flex-col md:flex-row">
@@ -928,9 +937,9 @@ const WebsiteBuilder = (props: WebsiteBuilderProps) => {
               <motion.img
                 src={
                   !isFile(form.watch("introMediaSection.introImage"))
-                    ? form.watch("introMediaSection.introImage")
+                    ? (form.watch("introMediaSection.introImage") as string)
                     : URL.createObjectURL(
-                        form.watch("introMediaSection.introImage")
+                        form.watch("introMediaSection.introImage") as File
                       )
                 }
                 width="100%"
