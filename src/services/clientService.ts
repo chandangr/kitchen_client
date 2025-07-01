@@ -1,93 +1,59 @@
 import { SignupFormData } from "@/components/AuthTabs";
-import { supabase } from "@/contexts/AuthContext";
 import { Session } from "@supabase/supabase-js";
-import console from "console";
-import { toast } from "sonner";
-import { authorizeUser } from "./utils";
-export async function createClientAfterSignUp(
-  clientData: SignupFormData,
-  session?: Session
-) {
-  const { data, error } = await supabase
-    .from("client")
-    .insert([
-      {
-        name: clientData.name,
-        email: clientData.email,
-        age: clientData?.age,
-        nationality: clientData?.nationality,
-        phone_number: clientData.phone_number,
-        gender: clientData?.gender,
-        marital_status: clientData?.marital_status,
-        dob: clientData.dob,
-        user_id: session?.user?.id,
-        cloud_kitchen_website_id: null,
-      },
-    ])
-    .select();
+import { getAuthHeaders } from "./auth";
+import { getBackendApiUrl } from "@/utils/environment";
 
-  if (error) {
-    console.error("Error creating client:", error);
-    toast.error("Failed to create client.");
-    throw new Error(error.message);
-  }
-
-  toast.success("Client created successfully.");
-  return data;
+export async function createClientAfterSignUp(clientData: SignupFormData, session: Session) {
+  const response = await fetch(`${getBackendApiUrl()}/api/client`, {
+    method: 'POST',
+    headers: await getAuthHeaders(),
+    body: JSON.stringify({
+      name: clientData.name,
+      email: clientData.email,
+      age: clientData?.age,
+      nationality: clientData?.nationality,
+      phone_number: clientData.phone_number,
+      gender: clientData?.gender,
+      marital_status: clientData?.marital_status,
+      dob: clientData.dob,
+      user_id: session?.user?.id,
+      cloud_kitchen_website_id: null,
+    }),
+  });
+  return response.ok ? await response.json() : null;
 }
 
-export const updateClientWebsiteId = async (cloudKitchenId: string) => {
-  const userDetails = authorizeUser();
-  if (!userDetails) return;
-  const { error } = await supabase
-    .from("client")
-    .update({ cloud_kitchen_website_id: cloudKitchenId, is_first_time: false })
-    .eq("user_id", userDetails?.id);
-
-  if (error) {
-    console.error("Error updating client:", error);
-    toast.error("Failed to update client.");
-    throw new Error(error.message);
-  }
-  toast.success("Client updated successfully.");
+export const updateClientWebsiteId = async (cloudKitchenId: string, user_id: string) => {
+  await fetch(`${getBackendApiUrl()}/api/client/website`, {
+    method: 'POST',
+    headers: await getAuthHeaders(),
+    body: JSON.stringify({ user_id, cloud_kitchen_website_id: cloudKitchenId }),
+  });
 };
 
-export const insertClientData = async (data: SignupFormData) => {
-  const { error } = await supabase
-    .from("client")
-    .insert([
-      {
-        ...data,
-        dob: "234234",
-        cloud_kitchen_website_id: null,
-      },
-    ])
-    .select();
-
-  if (error) {
-    toast.error("Failed to insert client data.");
-    return error;
-  }
-  toast.success("Client data inserted successfully.");
+export const insertClientData = async (data: unknown) => {
+  await fetch(`${getBackendApiUrl()}/api/client/insert`, {
+    method: 'POST',
+    headers: await getAuthHeaders(),
+    body: JSON.stringify(data),
+  });
 };
 
-export const updateClient = async (clientData: Partial<SignupFormData>) => {
-  const userDetails = authorizeUser();
-  if (!userDetails) return;
+export const updateClient = async (clientData: unknown) => {
+  await fetch(`${getBackendApiUrl()}/api/client`, {
+    method: 'PUT',
+    headers: await getAuthHeaders(),
+    body: JSON.stringify(clientData),
+  });
+};
 
-  const { error, data } = await supabase
-    .from("client")
-    .update(clientData)
-    .eq("user_id", userDetails.id)
-    .select()
-    .single();
-
-  if (error) {
-    console.error("Error updating client:", error);
-    toast.error("Failed to update client.");
-    throw new Error(error.message);
+export const getClientByUserId = async (user_id: string) => {
+  const response = await fetch(`${getBackendApiUrl()}/api/client/${user_id}`, {
+    method: 'GET',
+    headers: await getAuthHeaders(),
+  });
+  if (!response.ok) {
+    throw new Error('Failed to fetch client data');
   }
-  // @ts-expect-error --  this is preset
-  supabase.auth?.storage?.setItem("client", JSON.stringify(data));
-  toast.success("Client updated successfully.");
+  return await response.json();
 };

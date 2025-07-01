@@ -10,7 +10,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import {
-  getWebsiteBuilderData,
+  getWebsiteDataByUserId,
   saveWebsiteData,
   uploadMultipleFiles,
 } from "@/services/websiteBuilderService";
@@ -166,35 +166,27 @@ const WebsiteBuilder = (props: WebsiteBuilderProps) => {
     const fetchWebsiteData = async () => {
       if (authUser?.id) {
         try {
-          const websiteData = await getWebsiteBuilderData(authUser.id);
-          if (websiteData) {
+          const websiteData = await getWebsiteDataByUserId(authUser.id);
+          if (websiteData && websiteData.website_data) {
             form.reset({
               headerSection: {
-                ...websiteData.headerSection,
-                titleColor: websiteData.headerSection.titleColor || "#000000",
-                subtitleColor:
-                  websiteData.headerSection.subtitleColor || "#000000",
-                descriptionColor:
-                  websiteData.headerSection.descriptionColor || "#000000",
+                ...websiteData.website_data.headerSection,
+                titleColor: websiteData.website_data.headerSection.titleColor || "#000000",
+                subtitleColor: websiteData.website_data.headerSection.subtitleColor || "#000000",
+                descriptionColor: websiteData.website_data.headerSection.descriptionColor || "#000000",
               },
               introSection: {
-                ...websiteData.introSection,
-                introTitleColor:
-                  websiteData.introSection.introTitleColor || "#000000",
-                introDescriptionColor:
-                  websiteData.introSection.introDescriptionColor || "#000000",
+                ...websiteData.website_data.introSection,
+                introTitleColor: websiteData.website_data.introSection.introTitleColor || "#000000",
+                introDescriptionColor: websiteData.website_data.introSection.introDescriptionColor || "#000000",
               },
-              introMediaSection: websiteData.introMediaSection,
+              introMediaSection: websiteData.website_data.introMediaSection,
               featuredMenuSection: {
-                ...websiteData.featuredMenuSection,
-                featuredTitleColor:
-                  websiteData.featuredMenuSection.featuredTitleColor ||
-                  "#000000",
-                featuredDescriptionColor:
-                  websiteData.featuredMenuSection.featuredDescriptionColor ||
-                  "#000000",
+                ...websiteData.website_data.featuredMenuSection,
+                featuredTitleColor: websiteData.website_data.featuredMenuSection.featuredTitleColor || "#000000",
+                featuredDescriptionColor: websiteData.website_data.featuredMenuSection.featuredDescriptionColor || "#000000",
               },
-              footerSection: websiteData.footerSection,
+              footerSection: websiteData.website_data.footerSection,
             });
           }
         } catch (error) {

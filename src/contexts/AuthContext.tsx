@@ -3,6 +3,7 @@ import { createClientAfterSignUp } from "@/services/clientService";
 import { createClient, Session, User } from "@supabase/supabase-js";
 import React, { createContext, useContext, useState } from "react";
 import { toast } from "sonner";
+import { getBackendApiUrl } from "@/utils/environment";
 
 const VITE_SUPERBASE_URL = "https://qvkgwzkfbsahxyooshan.supabase.co";
 const VITE_SUPERBASE_API_KEY =
@@ -57,19 +58,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const signup = async (formdata: SignupFormData) => {
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email: formdata?.email,
-        password: formdata?.password,
+      const response = await fetch(`${getBackendApiUrl()}/api/auth/signup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: formdata.email, password: formdata.password })
       });
-
-      setIsAuthenticated(false);
-
-      if (error) {
-        console.error("Signup failed:", error.message);
-        toast.error(`Signup failed: ${error.message}`);
+      if (!response.ok) {
+        const error = await response.json();
+        toast.error(`Signup failed: ${error.error}`);
         return false;
       }
-
+      const data = await response.json();
       if (data?.session) {
         const clientData = await createClientAfterSignUp(
           formdata,
@@ -82,6 +81,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         localStorage.setItem("user", JSON.stringify(data.user));
       }
       toast.success("User signed up successfully.");
+      return true;
     } catch (error) {
       console.error("Signup error:", error);
       toast.error("Signup error occurred.");
@@ -89,30 +89,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  const signin = async (email: string, password: string) => {
+  const signin = async (email: string, password: string): Promise<any> => {
     try {
-      const { error, data } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
-
       if (error) {
-        console.error("Signin failed:", error.message);
-        toast.error(`Signin failed: ${error.message}`);
+        const errorMessage = typeof error === 'object' && error && 'message' in error ? (error as { message: string }).message : 'No session returned.';
+        toast.error(`Signin failed: ${errorMessage}`);
         return;
       }
 
-      const { data: clientData, error: clientError } = await supabase
-        .from("client")
-        .select("*")
-        .eq("user_id", data.user.id)
-        .single();
-
-      if (clientError) {
-        console.error("Error fetching client data:", clientError.message);
-        toast.error(`Error fetching client data: ${clientError.message}`);
+      let clientData = null;
+      try {
+        clientData = await (await import("@/services/clientService")).getClientByUserId(data.user.id);
+      } catch (clientError: unknown) {
+        const clientErrorMessage = typeof clientError === 'object' && clientError && 'message' in clientError ? (clientError as { message: string }).message : String(clientError);
+        console.error("Error fetching client data:", clientErrorMessage);
+        toast.error(`Error fetching client data: ${clientErrorMessage}`);
         return;
       }
+
       toast.success("User logged in successfully.");
       setSession(data?.session);
       // @ts-expect-error --  this is preset
@@ -151,7 +149,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         isAuthenticated,
         session,
         authUser,
-        // @ts-expect-error --  this is preset
         signup,
         signin,
         logout,

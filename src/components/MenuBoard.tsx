@@ -1,26 +1,8 @@
 import { fetchDishItems } from "@/services/dishItemService";
+import { getAuthUserData } from "@/lib/utils";
+import { DishItem } from "@/components/DishItemDrawer";
 import { motion } from "motion/react";
 import { useEffect, useState } from "react";
-
-type DishItem = {
-  id: string;
-  created_at: string;
-  user_id: string;
-  cuisine: string;
-  cuisine_type: string;
-  dish_calorie_count: number;
-  dish_category: string;
-  dish_cooking_methods: string;
-  dish_dietary: string;
-  dish_image: string;
-  dish_name: string;
-  dish_occasion: string;
-  dish_price: number;
-  dish_recipe: string;
-  dish_tags: string[];
-  dish_type: string;
-  image_url?: string; // Optional since it can be undefined
-};
 
 interface MenuBoardProps {
   height?: string; // Accept height as a prop with optional default
@@ -33,13 +15,15 @@ const MenuBoard = ({ height = "100vh", className = "" }: MenuBoardProps) => {
 
   useEffect(() => {
     const loadDishes = async () => {
-      const items = await fetchDishItems();
-      // Assign random images to items based on their category
-      const itemsWithImages = items.map((item) => ({
-        ...item,
-        image_url: item?.image_url,
-      }));
-      setDishes(itemsWithImages);
+      const user = getAuthUserData();
+      const userId = user?.id;
+      if (!userId) {
+        setDishes([]);
+        setLoading(false);
+        return;
+      }
+      const items = await fetchDishItems(userId);
+      setDishes(items);
       setLoading(false);
     };
 
@@ -114,7 +98,7 @@ const MenuBoard = ({ height = "100vh", className = "" }: MenuBoardProps) => {
                         </p>
                       </div>
                       <div className="text-orange-400 font-bold text-xs md:text-sm whitespace-nowrap">
-                        ${item?.dish_price}
+                        ${Number(item?.dish_price)}
                       </div>
                     </motion.div>
                   ))}
@@ -143,7 +127,7 @@ const MenuBoard = ({ height = "100vh", className = "" }: MenuBoardProps) => {
                         className="w-full h-32 object-cover rounded-full border-2 border-white shadow-lg"
                       />
                       <div className="absolute -bottom-1 -right-1 bg-orange-400 text-white px-2 py-0.5 rounded-full font-bold transform rotate-12 text-[10px] md:text-xs">
-                        ${items?.[0]?.dish_price}
+                        ${Number(items?.[0]?.dish_price)}
                         <span className="text-[8px] ml-0.5">OFF</span>
                       </div>
                     </div>

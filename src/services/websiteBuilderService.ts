@@ -2,9 +2,11 @@ import { FileItem, isFile } from "@/components/ui/file-upload";
 import { supabase } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { updateClientWebsiteId } from "./clientService";
-import { optimizeImage, uploadFileToSupabase } from "./fileUploadService";
+import { optimizeImage, uploadFileToBackend } from "./fileUploadService";
 import { UploadFileResponse, WebsiteData } from "./types";
 import { authorizeUser } from "./utils";
+import { getAuthHeaders } from "./auth";
+import { getBackendApiUrl } from "@/utils/environment";
 
 interface WebsiteBuilderData {
   user_id: string;
@@ -157,7 +159,7 @@ export const createClientWebsite = async (data: CreateClientWebsiteData) => {
         toast.error("Failed to create client website.");
         return;
       }
-      await updateClientWebsiteId(resData?.[0].id);
+      await updateClientWebsiteId(resData?.[0].id, userDetails.id);
       toast.success("Client website created successfully.");
     } catch (error) {
       console.error("Error in createClientWebsite:", error);
@@ -167,18 +169,12 @@ export const createClientWebsite = async (data: CreateClientWebsiteData) => {
 };
 
 export const getClientKitchenWebsiteData = async (id: string) => {
-  const { data, error } = await supabase
-    .from("cloud_kitchen_website")
-    .select("*")
-    .eq("user_id", id)
-    .single();
-
-  if (error) {
-    toast.error("Failed to fetch kitchen website data.");
-    throw new Error(error.message);
-  }
-
-  return data;
+  const response = await fetch(`${getBackendApiUrl()}/api/website/${id}`, {
+    method: 'GET',
+    headers: await getAuthHeaders(),
+  });
+  if (!response.ok) throw new Error('Failed to fetch kitchen website data');
+  return await response.json();
 };
 
 export async function saveWebsiteData(
@@ -254,11 +250,7 @@ export async function uploadMultipleFiles(
   try {
     const uploadPromises = files.map((file, index) => {
       if (isFile(file)) {
-        return uploadFileToSupabase(
-          file,
-          "website-builder-images",
-          "website-images"
-        );
+        return uploadFileToBackend(file);
       }
       // If it's already a URL, return a mock response
       return Promise.resolve({
@@ -278,32 +270,3 @@ export async function uploadMultipleFiles(
     throw error;
   }
 }
-
-export const getWebsiteBuilderData = async (
-  userId: string
-): Promise<WebsiteBuilderData | null> => {
-  try {
-    const { data, error } = await supabase
-      .from("cloud_kitchen_website")
-      .select("website_data")
-      .eq("user_id", userId)
-      .single();
-
-    if (error) {
-      console.error("Error fetching website builder data:", error);
-      return null;
-    }
-
-    if (!data) {
-      return null;
-    }
-
-    return {
-      user_id: userId,
-      ...data.website_data,
-    } as WebsiteBuilderData;
-  } catch (error) {
-    console.error("Error in getWebsiteBuilderData:", error);
-    return null;
-  }
-};

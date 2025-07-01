@@ -9,29 +9,36 @@ import {
 import { useEffect, useState } from "react";
 import { DishItem, default as DishItemDrawer } from "./DishItemDrawer";
 import { ThreeDCard } from "./ThreeDCard";
+import { getAuthUserData } from "@/lib/utils";
 
 const MenuItemPage = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [menuItems, setMenuItems] = useState<DishItem[]>([]);
   const [selecteDish, setSelecteDish] = useState<DishItem>();
 
+  const user = getAuthUserData();
+  const userId = user?.id;
+
   const handleAddMenuItem = async (newItem: DishItem) => {
     await insertDishItem(newItem);
-    const items = await fetchDishItems();
+    if (!userId) return;
+    const items = await fetchDishItems(userId);
     setMenuItems(items);
   };
 
   const handleEditMenuItem = async (updatedItem: DishItem) => {
-    // @ts-expect-error -- expected
-    await updateDishItem(selecteDish?.id, updatedItem);
-    const items = await fetchDishItems();
+    if (!selecteDish?.id) return;
+    await updateDishItem(selecteDish.id, updatedItem);
+    if (!userId) return;
+    const items = await fetchDishItems(userId);
     setMenuItems(items);
   };
 
-  const handleDeleteMenuItem = async (id: string) => {
+  const handleDeleteMenuItem = async (id?: string) => {
+    if (!id || !userId) return;
     try {
-      await deleteDishItem(id);
-      const items = await fetchDishItems();
+      await deleteDishItem(id, userId);
+      const items = await fetchDishItems(userId);
       setMenuItems(items);
     } catch (error) {
       console.error("Failed to delete menu item:", error);
@@ -40,11 +47,12 @@ const MenuItemPage = () => {
 
   useEffect(() => {
     const fetchItems = async () => {
-      const items = await fetchDishItems();
+      if (!userId) return;
+      const items = await fetchDishItems(userId);
       setMenuItems(items);
     };
     fetchItems();
-  }, []);
+  }, [userId]);
 
   return (
     <div className="w-full">
@@ -100,6 +108,7 @@ const MenuItemPage = () => {
           onClose={() => setIsDrawerOpen(false)}
           onAdd={handleAddMenuItem}
           initialValues={selecteDish}
+          userId={userId}
         />
       )}
     </div>

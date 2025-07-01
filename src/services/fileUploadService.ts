@@ -1,5 +1,5 @@
-import { supabase } from "@/contexts/AuthContext";
-import { toast } from "sonner";
+import { getAuthHeaders } from "./auth";
+import { getBackendApiUrl } from "@/utils/environment";
 
 export interface FileUploadResponse {
   path: string;
@@ -93,69 +93,37 @@ export const optimizeImage = async (
   });
 };
 
-export const uploadFileToSupabase = async (
-  file: File,
-  bucket: string = "dish-images",
-  folder: string = "dishes"
-): Promise<FileUploadResponse | null> => {
-  try {
-    // Optimize the image before uploading
-    const optimizedFile = await optimizeImage(file);
+// export const uploadFileToSupabase = async (file: File, bucket: string = "dish-images", folder: string = "dishes"): Promise<FileUploadResponse | null> => {
+//   ...
+//   // Supabase upload logic
+// };
 
-    // Create a unique file name
-    const fileExt = optimizedFile.name.split(".").pop();
-    const fileName = `${Math.random()
-      .toString(36)
-      .substring(2)}-${Date.now()}.${fileExt}`;
-    const filePath = `${folder}/${fileName}`;
-
-    // Upload the optimized file to Supabase Storage
-    const { error } = await supabase.storage
-      .from(bucket)
-      .upload(filePath, optimizedFile, {
-        cacheControl: "3600",
-        upsert: false,
-      });
-
-    if (error) {
-      console.error("Error uploading file:", error);
-      toast.error("Failed to upload file");
-      return null;
-    }
-
-    // Get the public URL
-    const {
-      data: { publicUrl },
-    } = supabase.storage.from(bucket).getPublicUrl(filePath);
-
-    return {
-      path: filePath,
-      url: publicUrl,
-    };
-  } catch (error) {
-    console.error("Error in file upload:", error);
-    toast.error("Failed to upload file");
-    return null;
-  }
+export const uploadFileToBackend = async (file: File): Promise<FileUploadResponse | null> => {
+  const formData = new FormData();
+  formData.append('logo', file);
+  const headers = await getAuthHeaders();
+  // Remove Content-Type for FormData
+  const { Authorization } = headers;
+  const response = await fetch(`${getBackendApiUrl()}/api/upload/logo`, {
+    method: 'POST',
+    headers: { Authorization },
+    body: formData,
+  });
+  if (!response.ok) return null;
+  const data = await response.json();
+  return { path: '', url: data.url };
 };
 
-export const deleteFileFromSupabase = async (
-  path: string,
-  bucket: string = "dish-images"
-): Promise<boolean> => {
-  try {
-    const { error } = await supabase.storage.from(bucket).remove([path]);
+// export const deleteFileFromSupabase = async (path: string, bucket: string = "dish-images"): Promise<boolean> => {
+//   ...
+//   // Supabase delete logic
+// };
 
-    if (error) {
-      console.error("Error deleting file:", error);
-      toast.error("Failed to delete file");
-      return false;
-    }
-
-    return true;
-  } catch (error) {
-    console.error("Error in file deletion:", error);
-    toast.error("Failed to delete file");
-    return false;
-  }
+export const deleteFileFromBackend = async (path: string, bucket: string = "dish-images"): Promise<boolean> => {
+  const response = await fetch(`${getBackendApiUrl()}/api/file/delete`, {
+    method: 'POST',
+    headers: await getAuthHeaders(),
+    body: JSON.stringify({ path, bucket }),
+  });
+  return response.ok;
 };

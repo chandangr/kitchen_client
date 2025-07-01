@@ -1,6 +1,6 @@
 import {
-  deleteFileFromSupabase,
-  uploadFileToSupabase,
+  deleteFileFromBackend,
+  uploadFileToBackend,
 } from "@/services/fileUploadService";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CloudUpload } from "lucide-react";
@@ -531,6 +531,7 @@ export type DishItemDrawerProps = {
   onAdd: (data: DishItem) => void;
   onEdit: (data: DishItem) => void;
   initialValues?: Partial<DishItem>;
+  userId: string;
 };
 
 // Define FileItem type to match the one in file-upload.tsx
@@ -547,10 +548,10 @@ const DishItemDrawer = ({
   onAdd,
   onEdit,
   initialValues,
+  userId,
 }: DishItemDrawerProps) => {
   const [files, setFiles] = useState<FileItem[] | null>(null);
   const [isUploading, setIsUploading] = useState(false);
-  const [currentImagePath, setCurrentImagePath] = useState<string | null>(null);
   const [imageToDelete, setImageToDelete] = useState<string | null>(null);
   const dropZoneConfig = {
     maxFiles: 1,
@@ -576,27 +577,15 @@ const DishItemDrawer = ({
   useEffect(() => {
     if (initialValues?.dish_image) {
       setFiles([initialValues.dish_image]);
-
-      // Extract the path from the URL if it's a Supabase URL
-      if (initialValues.dish_image.includes("supabase.co")) {
-        const urlParts = initialValues.dish_image.split("/");
-        const path = urlParts.slice(urlParts.indexOf("dishes") + 1).join("/");
-        setCurrentImagePath(`dishes/${path}`);
-      }
     }
   }, [initialValues?.dish_image]);
 
   // Handle file deletion from UI only
   const handleFileDelete = async (fileToDelete: FileItem) => {
     try {
-      if (
-        typeof fileToDelete === "string" &&
-        fileToDelete.includes("supabase.co")
-      ) {
-        const urlParts = fileToDelete.split("/");
-        const path = urlParts.slice(urlParts.indexOf("dishes") + 1).join("/");
+      if (typeof fileToDelete === "string") {
         // Store the path for deletion on form submit
-        setImageToDelete(`dishes/${path}`);
+        setImageToDelete(fileToDelete);
       }
       // Remove from UI state
       setFiles(null);
@@ -609,36 +598,32 @@ const DishItemDrawer = ({
   const onSubmit = async (values: DishItem) => {
     try {
       setIsUploading(true);
-
-      // Delete the old image from Supabase if marked for deletion
+      // Delete the old image from backend if marked for deletion
       if (imageToDelete) {
-        await deleteFileFromSupabase(imageToDelete);
+        await deleteFileFromBackend(imageToDelete);
         setImageToDelete(null);
       }
-
       // Upload images if files are selected
       if (files && files.length > 0) {
         const file = files[0]; // We only handle one file at a time
-
         if (isFile(file)) {
           // If it's a File object, upload it
-          const uploadResult = await uploadFileToSupabase(file);
+          const uploadResult = await uploadFileToBackend(file);
           if (uploadResult) {
             values.dish_image = uploadResult.url;
-            setCurrentImagePath(uploadResult.path);
           }
         } else {
           // If it's already a URL, use it directly
           values.dish_image = file;
         }
       }
-
+      // Add userId to the values
+      const valuesWithUser = { ...values, user_id: userId };
       if (initialValues?.id) {
-        onEdit({ ...values, id: initialValues.id });
+        onEdit({ ...valuesWithUser, id: initialValues.id });
       } else {
-        onAdd(values);
+        onAdd(valuesWithUser);
       }
-
       form.reset();
       setFiles(null);
       onClose();
